@@ -27,7 +27,7 @@ steps:
   displayName: Build
   inputs:
     command: build
-    projects: '**/api/*.csproj'
+    projects: '**/api/**/*.csproj'
     arguments: '--configuration $(buildConfiguration)' # Update this to match your need
     
 
@@ -36,8 +36,7 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Publish
   inputs:
-    # projects: 'api/Application.csproj'\
-    projects: '**/api/*.csproj'
+    projects: '**/api/**/*.csproj'
     command: publish
     publishWebProjects: True
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
