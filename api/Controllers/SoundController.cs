@@ -32,7 +32,7 @@ namespace Application.Controllers
             {
                 return NotFound();
             }
-            return await _context.Sound.ToListAsync();
+            return await _context.Sound.Include(s => s.House).ToListAsync();
         }
 
         // GET: api/Sound/5
