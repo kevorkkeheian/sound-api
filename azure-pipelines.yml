@@ -37,7 +37,6 @@ steps:
   displayName: Publish
   inputs:
     # projects: 'api/Application.csproj'
-    workingDirectory: '$(System.DefaultWorkingDirectory)\api'
     command: publish
     publishWebProjects: True
     arguments: 'api/Application.csproj --configuration $(buildConfiguration) ' #--output $(Build.ArtifactStagingDirectory)
@@ -48,6 +47,8 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: PublishArtifact
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)' 
+    targetPath: '$(Pipeline.Workspace)'#'$(Build.ArtifactStagingDirectory)' 
+    publishLocation: 'pipeline'
     # targetPath: '$(System.DefaultWorkingDirectory)\**\*.zip' 
     artifactName: 'Api'
+
