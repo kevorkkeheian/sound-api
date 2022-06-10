@@ -1,0 +1,39 @@
+﻿<div class="top-row ps-3 navbar navbar-white">
+    <div class="container-fluid">
+        <div class="d-flex text-center" ><div class="w-32 h-32 d-flex text-center justify-content-center bg-dark text-light rounded p-1 me-2">
+                S
+        </div>
+        <a class="navbar-brand font-semibold ms-1" href="" >Application</a></div>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="sounds">
+                @* <span class="oi oi-list-rich" aria-hidden="true"></span>  *@
+                <i class="bi bi-speaker me-2" style="font-size: 1.3rem;"></i>
+                Sounds
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

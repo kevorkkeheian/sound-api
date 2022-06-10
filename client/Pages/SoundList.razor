@@ -1,0 +1,93 @@
+@page "/sounds"
+@inject HttpClient _client
+@inject NavigationManager _navigationManager
+@inject ISnackbar Snackbar
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+<div class="d-flex justify-content-between py-2 mb-2">
+    <Navigation />
+</div>
+
+
+
+<MudTable   Items="@Elements" MultiSelection="true" 
+            Dense="true" Hover="true" HorizontalScrollbar="true"
+            FixedHeader="@fixed_header" FixedFooter="@fixed_footer" Height="@(fixed_header || fixed_footer ?"650px":"")"
+            Loading="@_loading" LoadingProgressColor="Color.Info"
+            Filter="new Func<Sound,bool>(FilterFunc1)" @bind-SelectedItems="selectedItems"
+            RowsPerPage=100
+            Class="mb-3">
+    <ToolBarContent>
+        
+        <MudText Typo="Typo.h6">Sounds</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Created On</MudTh>
+        <MudTh>House</MudTh>
+        <MudTh>Value</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Created On" Class='@(selectedItems.Select(s => s.Id).Contains(context.Id) == true ? "fw-bold" : "")'>@context.CreatedOn</MudTd>
+        <MudTd DataLabel="Name" Class='@(selectedItems.Select(s => s.Id).Contains(context.Id) == true ? "fw-bold" : "")'>@context.House.Name</MudTd>
+        <MudTd DataLabel="Description" Class='@(selectedItems.Select(s => s.Id).Contains(context.Id) == true ? "fw-bold" : "")'>@context.Value</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+<MudText Inline="true">Selected items: @(selectedItems==null ? "" : string.Join(", ", selectedItems.OrderBy(x=>x.Id).Select(x=>x.Id)))</MudText>
+
+
+
+
+
+
+@code {
+
+    bool fixed_header = true;
+    bool fixed_footer = true;
+    private bool _loading = false;
+    private string searchString1 = "";
+    private HashSet<Sound> selectedItems = new HashSet<Sound>();
+
+    private IEnumerable<Sound> Elements = new List<Sound>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+
+        Elements = await _client.GetFromJsonAsync<List<Sound>>($"api/sound"); 
+        
+        _loading = false;
+    }
+
+    private bool FilterFunc1(Sound element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(Sound element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Id.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Id.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Value.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private void Navigate(string url)
+    {
+        _navigationManager.NavigateTo(url);
+    }
+}
+
+
+
+
