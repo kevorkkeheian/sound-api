@@ -37,11 +37,13 @@ steps:
   displayName: Publish
   inputs:
     # projects: 'api/Application.csproj'
+    workingDirectory: '$(System.DefaultWorkingDirectory)\api'
     command: publish
     publishWebProjects: True
-    arguments: 'api/Application.csproj --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    arguments: 'api/Application.csproj --configuration $(buildConfiguration) ' #--output $(Build.ArtifactStagingDirectory)
     zipAfterPublish: True
-    
+
+
 # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
 - task: PublishPipelineArtifact@1
   displayName: PublishArtifact
