@@ -27,7 +27,7 @@ steps:
   displayName: Build
   inputs:
     command: build
-    projects: 'api/Application.csproj'
+    projects: '**/api/*.csproj'
     arguments: '--configuration $(buildConfiguration)' # Update this to match your need
     
 
@@ -36,10 +36,11 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Publish
   inputs:
-    # projects: 'api/Application.csproj'
+    # projects: 'api/Application.csproj'\
+    projects: '**/api/*.csproj'
     command: publish
     publishWebProjects: True
-    arguments: 'api/Application.csproj --configuration $(buildConfiguration) ' #--output $(Build.ArtifactStagingDirectory)
+    arguments: '--configuration $(buildConfiguration) ' #--output $(Build.ArtifactStagingDirectory)
     zipAfterPublish: True
 
 
@@ -47,8 +48,7 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: PublishArtifact
   inputs:
-    targetPath: '$(Pipeline.Workspace)'#'$(Build.ArtifactStagingDirectory)' 
-    publishLocation: 'pipeline'
+    targetPath: '$(Build.ArtifactStagingDirectory)' 
     # targetPath: '$(System.DefaultWorkingDirectory)\**\*.zip' 
     artifactName: 'Api'
 
