@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
+var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContext") ?? 
@@ -14,6 +16,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+// get CORS urls from appsettings
+var corsUrl = builder.Configuration.GetSection("CorsUrl").Get<string>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy  =>
+                      {
+                          policy.WithOrigins(corsUrl).AllowAnyHeader().AllowAnyMethod();
+                      });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,6 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthorization();
 
