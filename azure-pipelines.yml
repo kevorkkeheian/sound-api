@@ -46,4 +46,4 @@ steps:
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)' 
     # targetPath: '$(System.DefaultWorkingDirectory)\**\*.zip' 
-    artifactName: 'Application'
+    artifactName: 'Api'
