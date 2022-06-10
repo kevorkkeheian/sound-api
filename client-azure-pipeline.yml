@@ -27,23 +27,27 @@ steps:
   displayName: Build
   inputs:
     command: build
-    projects: '**/client/*.csproj'
+    projects: '**/client/**/*.csproj'
     arguments: '--configuration $(buildConfiguration)' # Update this to match your need
     
 
 # do this after you've built your app, near the end of your pipeline in most cases
 # for example, you do this before you deploy to an Azure web app on Windows
 - task: DotNetCoreCLI@2
+  displayName: Publish
   inputs:
-    projects: '**/client/*.csproj'
+    projects: '**/client/**/*.csproj'
     command: publish
-    publishWebProjects: True
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    publishWebProjects: false
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
     zipAfterPublish: True
-    
+
+
 # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
 - task: PublishPipelineArtifact@1
+  displayName: PublishArtifact
   inputs:
     targetPath: '$(Build.ArtifactStagingDirectory)' 
     # targetPath: '$(System.DefaultWorkingDirectory)\**\*.zip' 
-    artifactName: 'Client'
+    artifactName: 'Api'
+
