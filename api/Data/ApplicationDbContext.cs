@@ -12,8 +12,6 @@ using Application.Models;
         {
         }
 
-        public DbSet<Application.Models.Sound>? Sound { get; set; }
-
         public DbSet<Application.Models.House>? House { get; set; }
         public DbSet<Application.Models.ApiKey>? ApiKey { get; set; }
     }

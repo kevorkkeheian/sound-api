@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Application.Models;
 using Api.Attributes;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2.Model;
 
 namespace Application.Controllers
 {
@@ -15,10 +18,12 @@ namespace Application.Controllers
     [ApiKey]
     public class SoundController : ControllerBase
     {
+        private readonly IDynamoDBContext _dynamoContext;
         private readonly ApplicationDbContext _context;
 
-        public SoundController(ApplicationDbContext context)
+        public SoundController(IDynamoDBContext dynamoContext, ApplicationDbContext context)
         {
+            _dynamoContext = dynamoContext;
             _context = context;
         }
 
@@ -28,107 +33,63 @@ namespace Application.Controllers
         {
             if(!ApiKeyExists(Request)) return Unauthorized();
 
-            if (_context.Sound == null)
-            {
-                return NotFound();
-            }
-            return await _context.Sound.Include(s => s.House).ToListAsync();
+            var conditions = new List<ScanCondition>();
+
+            return await _dynamoContext.ScanAsync<Sound>(conditions).GetRemainingAsync();
         }
 
-        // GET: api/Sound/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Sound>> GetSound(string id)
+        [HttpGet("today")]
+        public async Task<ActionResult<IEnumerable<Sound>>> GetTodaySound()
         {
             if(!ApiKeyExists(Request)) return Unauthorized();
 
-            if (_context.Sound == null)
-            {
-                return NotFound();
-            }
-            var sound = await _context.Sound.FindAsync(id);
+            var conditions = new List<ScanCondition>();
 
-            if (sound == null)
-            {
-                return NotFound();
-            }
+            // convert today to timestamp
+            var now = DateTime.Now;
+            var startDate = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
+            var epoch = new DateTime(1970, 1, 1);
+            var timestamp = (long)(startDate - epoch).TotalMilliseconds;
 
-            return sound;
+            // add condition to scan
+            conditions.Add(new ScanCondition("TimeStamp", ScanOperator.GreaterThanOrEqual, timestamp));
+
+            // return result
+            return await _dynamoContext.ScanAsync<Sound>(conditions).GetRemainingAsync();
+
         }
 
-        // PUT: api/Sound/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSound(string id, Sound sound)
+
+
+        [Route("search/{mac}")]
+        [HttpGet]
+        public async Task<IActionResult> Search(string mac, [FromQuery] string? ts)
         {
-            if(!ApiKeyExists(Request)) return Unauthorized();
+            // Note: You can only query the tables that have a composite primary key (partition key and sort key).
 
-            if (id != sound.Id)
+            // 1. Construct QueryFilter
+            var queryFilter = new QueryFilter("macAddress", QueryOperator.Equal, mac);
+
+            if (!string.IsNullOrEmpty(ts))
             {
-                return BadRequest();
+                queryFilter.AddCondition("ts", QueryOperator.Equal, Convert.ToInt64(ts));
             }
 
-            _context.Entry(sound).State = EntityState.Modified;
-
-            try
+            // 2. Construct QueryOperationConfig
+            var queryOperationConfig = new QueryOperationConfig
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SoundExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                Filter = queryFilter
+            };
 
-            return NoContent();
-        }
+            // 3. Create async search object
+            var search = _dynamoContext.FromQueryAsync<Sound>(queryOperationConfig);
 
-        // POST: api/Sound
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Sound>> PostSound(Sound sound)
-        {
-            if(!ApiKeyExists(Request)) return Unauthorized();
+            // 4. Finally get all the data in a singleshot
+            var searchResponse = await search.GetRemainingAsync();
 
-            if (_context.Sound == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Sound'  is null.");
-            }
-            _context.Sound.Add(sound);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetSound", new { id = sound.Id }, sound);
-        }
-
-        // DELETE: api/Sound/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSound(string id)
-        {
-            if(!ApiKeyExists(Request)) return Unauthorized();
-            if (_context.Sound == null)
-            {
-                return NotFound();
-            }
-            var sound = await _context.Sound.FindAsync(id);
-            if (sound == null)
-            {
-                return NotFound();
-            }
-
-            _context.Sound.Remove(sound);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool SoundExists(string id)
-        {
-            return (_context.Sound?.Any(e => e.Id == id)).GetValueOrDefault();
+            // Return it
+            return Ok(searchResponse);
         }
 
         private bool ApiKeyExists(HttpRequest request)
@@ -136,6 +97,14 @@ namespace Application.Controllers
             var key = request.Headers.FirstOrDefault(x => x.Key == "key").Value.FirstOrDefault();
 
             return (_context.ApiKey?.Any(e => e.Key == key)).GetValueOrDefault();
+        }
+
+        private static DateTime UnixTimeStampToDateTime( double unixTimeStamp )
+        {
+            // Unix timestamp is seconds past epoch
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds( unixTimeStamp ).ToLocalTime();
+            return dateTime;
         }
     }
 }

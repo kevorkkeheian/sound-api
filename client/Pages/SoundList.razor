@@ -26,21 +26,25 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh>Created On</MudTh>
-        <MudTh>House</MudTh>
-        <MudTh>Value</MudTh>
+        <MudTh>TimeStamp</MudTh>
+        <MudTh>Mac Address</MudTh>
+        <MudTh>Loudness</MudTh>
+        <MudTh>Level</MudTh>
         <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Created On" Class='@(selectedItems.Select(s => s.Id).Contains(context.Id) == true ? "fw-bold" : "")'>@context.CreatedOn</MudTd>
-        <MudTd DataLabel="Name" Class='@(selectedItems.Select(s => s.Id).Contains(context.Id) == true ? "fw-bold" : "")'>@context.House.Name</MudTd>
-        <MudTd DataLabel="Description" Class='@(selectedItems.Select(s => s.Id).Contains(context.Id) == true ? "fw-bold" : "")'>@context.Value</MudTd>
+        <MudTd DataLabel="Created On" Class='@(selectedItems.Select(s => s.TimeStamp).Contains(context.TimeStamp) == true ? "fw-bold" : "")'>@context.CreatedOn</MudTd>
+        <MudTd DataLabel="Timestamp" Class='@(selectedItems.Select(s => s.TimeStamp).Contains(context.TimeStamp) == true ? "fw-bold" : "")'>@context.TimeStamp</MudTd>
+        <MudTd DataLabel="Mac Address" Class='@(selectedItems.Select(s => s.TimeStamp).Contains(context.TimeStamp) == true ? "fw-bold" : "")'>@context.MacAddress</MudTd>
+        <MudTd DataLabel="Loudness" Class='@(selectedItems.Select(s => s.TimeStamp).Contains(context.TimeStamp) == true ? "fw-bold" : "")'>@context.Loudness</MudTd>
+        <MudTd DataLabel="Level" Class='@(selectedItems.Select(s => s.TimeStamp).Contains(context.TimeStamp) == true ? "fw-bold" : "")'>@context.Level</MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />
     </PagerContent>
 </MudTable>
 
-<MudText Inline="true">Selected items: @(selectedItems==null ? "" : string.Join(", ", selectedItems.OrderBy(x=>x.Id).Select(x=>x.Id)))</MudText>
+@* <MudText Inline="true">Selected items: @(selectedItems==null ? "" : string.Join(", ", selectedItems.OrderBy(x=>x.TimeStamp.ToString().Select(x=>x.TimeStamp)))</MudText> *@
 
 
 
@@ -62,7 +66,7 @@
     {
         _loading = true;
 
-        Elements = await _client.GetFromJsonAsync<List<Sound>>($"api/sound"); 
+        Elements = await _client.GetFromJsonAsync<List<Sound>>($"api/sound/today"); 
         
         _loading = false;
     }
@@ -73,12 +77,17 @@
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if (element.Id.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        Console.WriteLine($"-------------------searchString: {searchString}-------------------");
+
+        if (element.TimeStamp.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.Id.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.MacAddress.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.Value.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.Loudness.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
+        @* if(element.CreatedOn.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true; *@
+        
         return false;
     }
 

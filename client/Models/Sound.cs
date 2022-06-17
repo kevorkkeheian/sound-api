@@ -5,13 +5,14 @@ namespace Application.Models
 {
     public class Sound
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string? Id { get; set; }
-        public string? HouseId { get; set; }
-        public House? House { get; set; }
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
-        public decimal Value { get; set; }
+        public Int64 TimeStamp { get; set; }
+        
+        public string Level { get; set; }
+
+        public int Loudness { get; set; }
+
+        public string MacAddress { get; set; }
+        public string CreatedOn { get; set; }
 
     }
 }
