@@ -3,25 +3,28 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Application.Converter;
+using Newtonsoft.Json;
 
 namespace Application.Models
 {
-    [DynamoDBTable("Esp8266_SM_Table")]
     public class Sound
     {
-        [DynamoDBProperty("ts")]
-        public Int64 TimeStamp { get; set; }
+        [JsonProperty("_id")]
+        public string Id { get; set; }
         
-        [DynamoDBProperty("Level")]
+        [JsonProperty("ts")]
+        public string TimeStamp { get; set; }
+        
+        [JsonProperty("level")]
         public string Level { get; set; }
 
-        [DynamoDBProperty("Loudness")]
-        public int Loudness { get; set; }
+        [DynamoDBProperty("loudness")]
+        public decimal Loudness { get; set; }
 
-        [DynamoDBProperty("macAddress")]
+        [DynamoDBProperty("MacAddress")]
         public string MacAddress { get; set; }
 
-        [DynamoDBProperty("Time")]
+        [DynamoDBProperty("_event_time")]
         public string CreatedOn { get; set; }
 
     }

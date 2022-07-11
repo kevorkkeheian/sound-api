@@ -15,24 +15,23 @@ namespace Application.Controllers
 {
     [Route("api/sound/public")]
     [ApiController]
+    
     public class SoundPublicController : ControllerBase
     {
-        private readonly IDynamoDBContext _dynamoContext;
-        private readonly ApplicationDbContext _context;
 
-        public SoundPublicController(IDynamoDBContext dynamoContext, ApplicationDbContext context)
-        {
-            _dynamoContext = dynamoContext;
-            _context = context;
-        }
 
-        // GET: api/Sound
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Sound>>> GetSound()
         {
-            var conditions = new List<ScanCondition>();
+            HttpClient _client = new HttpClient();
 
-            return await _dynamoContext.ScanAsync<Sound>(conditions).GetRemainingAsync();
+            
+            
+            _client.DefaultRequestHeaders.Add("Authorization", "ApiKey HmCjwb1agD7nRvI8OAiYx7SCo6mb8MvB1QDKM9cc10NXGjpUpYp5dvGX8bVE1iQW");
+            // _client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+            var response = await _client.PostAsJsonAsync<RocksetRequest>("https://api.use1a1.rockset.com/v1/orgs/self/ws/commons/lambdas/PBISample/tags/latest", null);
+            
+            return Ok(response.Content.ReadFromJsonAsync<RocksetRequest>().Result.Results);
         }
     }
 }
