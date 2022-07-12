@@ -5,7 +5,9 @@
         </div>
         <a class="navbar-brand font-semibold ms-1" href="" >Application</a></div>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
+            <span class="navbar-toggler-icon">
+                <i class="@NavBarIcon" style="font-size: 2rem;"></i>
+            </span>
         </button>
     </div>
 </div>
@@ -18,10 +20,16 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="sounds">
-                @* <span class="oi oi-list-rich" aria-hidden="true"></span>  *@
-                <i class="bi bi-speaker me-2" style="font-size: 1.3rem;"></i>
+            <NavLink class="nav-link" href="sounds" Match="NavLinkMatch.All">
+                <i class="bi bi-table me-2" style="font-size: 1.3rem;"></i>
                 Sounds
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="sounds" Match="NavLinkMatch.All">
+                <i class="bi bi-bar-chart me-2" style="font-size: 1.3rem;"></i>
+                Dashboard
             </NavLink>
         </div>
     </nav>
@@ -31,6 +39,7 @@
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavBarIcon => collapseNavMenu ? "bi bi-list" : "bi bi-x-lg";
 
     private void ToggleNavMenu()
     {
