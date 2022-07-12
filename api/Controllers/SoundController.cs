@@ -18,78 +18,54 @@ namespace Application.Controllers
     [ApiKey]
     public class SoundController : ControllerBase
     {
-        private readonly IDynamoDBContext _dynamoContext;
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public SoundController(IDynamoDBContext dynamoContext, ApplicationDbContext context)
+        public SoundController(ApplicationDbContext context, IConfiguration configuration)
         {
-            _dynamoContext = dynamoContext;
             _context = context;
+            _configuration = configuration;
         }
 
-        // GET: api/Sound
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Sound>>> GetSound()
-        {
-            if(!ApiKeyExists(Request)) return Unauthorized();
-
-            var conditions = new List<ScanCondition>();
-
-            return await _dynamoContext.ScanAsync<Sound>(conditions).GetRemainingAsync();
-        }
 
         [HttpGet("today")]
         public async Task<ActionResult<IEnumerable<Sound>>> GetTodaySound()
         {
-            if(!ApiKeyExists(Request)) return Unauthorized();
 
-            var conditions = new List<ScanCondition>();
+             if(!ApiKeyExists(Request)) return Unauthorized();
 
-            // convert today to timestamp
-            var now = DateTime.Now;
-            var startDate = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0);
-            var epoch = new DateTime(1970, 1, 1);
-            var timestamp = (long)(startDate - epoch).TotalMilliseconds;
+            HttpClient _client = new HttpClient();
 
-            // add condition to scan
-            conditions.Add(new ScanCondition("TimeStamp", ScanOperator.GreaterThanOrEqual, timestamp));
-
-            // return result
-            return await _dynamoContext.ScanAsync<Sound>(conditions).GetRemainingAsync();
+            // get rockset api key from appsettings usin configuration
+            var rocksetApiKey = _configuration.GetValue<string>("Rockset:ApiKey");
+            var rocksetApiUrl = _configuration.GetValue<string>("Rockset:ApiUrl");
+            
+            _client.DefaultRequestHeaders.Add("Authorization", rocksetApiKey);
+            var response = await _client.PostAsJsonAsync<RocksetRequest>($"{rocksetApiUrl}/v1/orgs/self/ws/commons/lambdas/TodayValues/tags/latest", null);
+            
+            return Ok(response.Content.ReadFromJsonAsync<RocksetRequest>().Result.Results);
 
         }
 
 
 
-        [Route("search/{mac}")]
+        [Route("search")]
         [HttpGet]
-        public async Task<IActionResult> Search(string mac, [FromQuery] string? ts)
+        public async Task<ActionResult<IEnumerable<Sound>>> Search([FromQuery] string name, [FromQuery] string type, [FromQuery] string value)
         {
-            // Note: You can only query the tables that have a composite primary key (partition key and sort key).
 
-            // 1. Construct QueryFilter
-            var queryFilter = new QueryFilter("macAddress", QueryOperator.Equal, mac);
+             if(!ApiKeyExists(Request)) return Unauthorized();
 
-            if (!string.IsNullOrEmpty(ts))
-            {
-                queryFilter.AddCondition("ts", QueryOperator.Equal, Convert.ToInt64(ts));
-            }
+            HttpClient _client = new HttpClient();
 
-            // 2. Construct QueryOperationConfig
-            var queryOperationConfig = new QueryOperationConfig
-            {
-                Filter = queryFilter
-            };
-
-            // 3. Create async search object
-            var search = _dynamoContext.FromQueryAsync<Sound>(queryOperationConfig);
-
-            // 4. Finally get all the data in a singleshot
-            var searchResponse = await search.GetRemainingAsync();
-
-
-            // Return it
-            return Ok(searchResponse);
+            // get rockset api key from appsettings usin configuration
+            var rocksetApiKey = _configuration.GetValue<string>("Rockset:ApiKey");
+            var rocksetApiUrl = _configuration.GetValue<string>("Rockset:ApiUrl");
+            
+            _client.DefaultRequestHeaders.Add("Authorization", rocksetApiKey);
+            var response = await _client.PostAsJsonAsync<RocksetRequest>($"{rocksetApiUrl}/v1/orgs/self/ws/commons/lambdas/FilterByMacAddress/tags/latest?name={name}&type={type}&value={value}", null);
+            
+            return Ok(response.Content.ReadFromJsonAsync<RocksetRequest>().Result.Results);
         }
 
         private bool ApiKeyExists(HttpRequest request)
