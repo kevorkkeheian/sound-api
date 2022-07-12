@@ -1,8 +1,10 @@
 ﻿@page "/"
+@inject IJSRuntime jsRuntime
+
 
 <PageTitle>Home</PageTitle>
 
-<MudLink Href="dashboard">
+@* <MudLink Href="dashboard">
     <MudCard>
         <MudCardContent>
             <div class="text-center">
@@ -24,4 +26,34 @@
 
         </MudCardContent>
     </MudCard>
-</MudLink>
+</MudLink> *@
+
+
+@if(!mobile) {
+
+        <iframe title="Sound Pollution" width="600" height="800" src="https://app.powerbi.com/view?r=eyJrIjoiZTFlYjgzOWMtZDNkYi00ZWM4LWJhOTItMjcwNjEzNGEzMmYxIiwidCI6IjFjNzkxZWU4LTU4NGEtNDI2Mi05YWUwLWRlZjY5NzQ5MjQ0ZiIsImMiOjl9&pageName=ReportSection" frameborder="0" allowFullScreen="true"></iframe>
+   
+
+}
+else {
+    <iframe title="Sound Pollution" width="600" height="800" src="https://app.powerbi.com/view?r=eyJrIjoiZTFlYjgzOWMtZDNkYi00ZWM4LWJhOTItMjcwNjEzNGEzMmYxIiwidCI6IjFjNzkxZWU4LTU4NGEtNDI2Mi05YWUwLWRlZjY5NzQ5MjQ0ZiIsImMiOjl9&pageName=ReportSection25c91e6ae8dbd866787c" frameborder="0" allowFullScreen="true"></iframe>
+}
+
+@code {
+    private string isDevice { get; set; }
+    private bool mobile { get; set; }
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FindResponsiveness();
+    }
+
+    public async Task FindResponsiveness()
+    {
+        mobile = await jsRuntime.InvokeAsync<bool>("isDevice");
+        isDevice = mobile ? "Mobile" : "Desktop";
+        
+
+    }
+}
