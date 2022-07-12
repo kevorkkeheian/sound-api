@@ -19,17 +19,28 @@ namespace Application.Controllers
     public class SoundPublicController : ControllerBase
     {
 
+        private readonly IConfiguration _configuration;
+
+        public SoundPublicController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Sound>>> GetSound()
         {
             HttpClient _client = new HttpClient();
 
+            // get rockset api key from appsettings usin configuration
+            var rocksetApiKey = _configuration.GetValue<string>("Rockset:ApiKey");
+            var rocksetApiUrl = _configuration.GetValue<string>("Rockset:ApiUrl");
+
+
             
-            
-            _client.DefaultRequestHeaders.Add("Authorization", "ApiKey HmCjwb1agD7nRvI8OAiYx7SCo6mb8MvB1QDKM9cc10NXGjpUpYp5dvGX8bVE1iQW");
+            _client.DefaultRequestHeaders.Add("Authorization", rocksetApiKey);
             // _client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-            var response = await _client.PostAsJsonAsync<RocksetRequest>("https://api.use1a1.rockset.com/v1/orgs/self/ws/commons/lambdas/PBISample/tags/latest", null);
+            var response = await _client.PostAsJsonAsync<RocksetRequest>($"{rocksetApiUrl}/v1/orgs/self/ws/commons/lambdas/PBISample/tags/latest", null);
             
             return Ok(response.Content.ReadFromJsonAsync<RocksetRequest>().Result.Results);
         }
