@@ -1,6 +1,6 @@
 {
-  "name": "Application",
-  "short_name": "Application",
+  "name": "Noisy Beirut",
+  "short_name": "Noisy Beirut",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
