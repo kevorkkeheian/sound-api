@@ -48,12 +48,13 @@ builder.Services.AddSwaggerGen();
 
 // get CORS urls from appsettings
 var corsUrl = builder.Configuration.GetSection("CorsUrl").Get<string>();
+var corsUrl2 = builder.Configuration.GetSection("CorsUrl2").Get<string>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy  =>
                       {
-                          policy.WithOrigins(corsUrl).AllowAnyHeader().AllowAnyMethod();
+                          policy.WithOrigins(corsUrl, corsUrl2).AllowAnyHeader().AllowAnyMethod();
                       });
 });
 
